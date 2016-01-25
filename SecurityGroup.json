@@ -1,0 +1,252 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Outputs": {
+    "BastionSecurityGroupId": {
+      "Description": "Bastion Security Group ID",
+      "Value": {
+        "Ref": "BastionSecurityGroup"
+      }
+    },
+    "craftSecurityGroupId": {
+      "Description": "craftSecurityGroup ID",
+      "Value": {
+        "Ref": "craftSecurityGroup"
+      }
+    },
+    "craftElbSecurityGroupId": {
+      "Description": "craftElbSecurityGroup ID",
+      "Value": {
+        "Ref": "craftElbSecurityGroup"
+      }
+    },
+    "RdsSecurityGroupId": {
+      "Description": "RDS Security Group ID",
+      "Value": {
+        "Ref": "RdsSecurityGroup"
+      }
+    },
+    "VpnSecurityGroupId": {
+      "Description": "Vpn Security Group ID",
+      "Value": {
+        "Ref": "VpnSecurityGroup"
+      }
+    }
+  },
+  "Parameters": {
+    "VpcId": {
+      "Default": "",
+      "Type": "String",
+      "Description": "VPC ID"
+    }
+  },
+  "Description": "Security Groups",
+  "Resources": {
+    "RdsSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "SecurityGroupIngress": [
+          {
+            "ToPort": "-1",
+            "FromPort": "-1",
+            "CidrIp": "192.168.128.0/21",
+            "IpProtocol": "icmp"
+          },
+          {
+            "ToPort": "3306",
+            "FromPort": "3306",
+            "CidrIp": "192.168.128.0/21",
+            "IpProtocol": "tcp"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "GroupDescription": "Enable communication with RDS node(s)."
+      }
+    },
+    "craftElbSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "SecurityGroupIngress": [
+          {
+            "ToPort": 80,
+            "FromPort": 80,
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp"
+          },
+          {
+            "ToPort": 443,
+            "FromPort": 443,
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "GroupDescription": "Enable communication to craftElb",
+        "SecurityGroupEgress": [
+          {
+            "ToPort": -1,
+            "FromPort": -1,
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "icmp"
+          },
+          {
+            "ToPort": 65535,
+            "FromPort": 0,
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "udp"
+          },
+          {
+            "ToPort": 65535,
+            "FromPort": 0,
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    },
+    "BastionSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "SecurityGroupIngress": [
+          {
+            "ToPort": "22",
+            "FromPort": "22",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "GroupDescription": "Enable communication to bastion host(s).",
+        "SecurityGroupEgress": [
+          {
+            "ToPort": "-1",
+            "FromPort": "-1",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "icmp"
+          },
+          {
+            "ToPort": "65535",
+            "FromPort": "0",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "udp"
+          },
+          {
+            "ToPort": "65535",
+            "FromPort": "0",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    },
+    "VpnSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "SecurityGroupIngress": [
+          {
+            "ToPort": "22",
+            "FromPort": "22",
+            "CidrIp": "192.168.128.0/21",
+            "IpProtocol": "tcp"
+          },
+          {
+            "ToPort": "51",
+            "FromPort": "50",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "udp"
+          },
+          {
+            "ToPort": "500",
+            "FromPort": "500",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "udp"
+          },
+          {
+            "ToPort": "4500",
+            "FromPort": "4500",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "udp"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "GroupDescription": "Enable communication to Vpn and VPC.",
+        "SecurityGroupEgress": [
+          {
+            "ToPort": "-1",
+            "FromPort": "-1",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "icmp"
+          },
+          {
+            "ToPort": "65535",
+            "FromPort": "0",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "udp"
+          },
+          {
+            "ToPort": "65535",
+            "FromPort": "0",
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    },
+    "craftSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "SecurityGroupIngress": [
+          {
+            "ToPort": 22,
+            "FromPort": 22,
+            "CidrIp": "192.168.128.0/21",
+            "IpProtocol": "tcp"
+          },
+          {
+            "ToPort": 80,
+            "FromPort": 80,
+            "CidrIp": "192.168.128.0/21",
+            "IpProtocol": "tcp"
+          },
+          {
+            "ToPort": 443,
+            "FromPort": 443,
+            "CidrIp": "192.168.128.0/21",
+            "IpProtocol": "tcp"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "GroupDescription": "Enable communication to craft",
+        "SecurityGroupEgress": [
+          {
+            "ToPort": -1,
+            "FromPort": -1,
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "icmp"
+          },
+          {
+            "ToPort": 65535,
+            "FromPort": 0,
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "udp"
+          },
+          {
+            "ToPort": 65535,
+            "FromPort": 0,
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    }
+  }
+}
